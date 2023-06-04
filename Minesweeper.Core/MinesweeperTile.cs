@@ -46,7 +46,7 @@ public class MinesweeperTile
         {
             if (SurroundingMines == 0)
             {
-                foreach (var tile in Game?.GetAdjacentTiles(X, Y) ?? throw new InvalidOperationException())
+                foreach (var tile in Game!.GetAdjacentTiles(X, Y))
                 {
                     tile.Clear(false);
                 }
@@ -61,6 +61,26 @@ public class MinesweeperTile
         {
             OnExploded(new());
         }
+    }
+
+    public void Chord()
+    {
+        if (!IsCleared)
+        {
+            return;
+        }
+
+        if (Game!.GetAdjacentTiles(X, Y).Count(x => x.IsFlagged) != SurroundingMines)
+        {
+            return;
+        }
+
+        foreach(var tile in Game!.GetAdjacentTiles(X, Y))
+        {
+            tile.Clear(false);
+        }
+
+        OnCleared(new());
     }
 
     public void ToggleFlag() => TileState = TileState switch

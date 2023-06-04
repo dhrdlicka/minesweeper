@@ -12,7 +12,6 @@ public class Field : GameControl
     private bool MiddleButtonDown { get; set; } = false;
 
     private Tile? PeekedTile { get; set; } = null;
-    private bool BigPeek { get; set; } = false;
     private bool PeekDisabled { get; set; } = false;
 
     public Field(Minesweeper<Tile> game)
@@ -42,7 +41,6 @@ public class Field : GameControl
             else
             {
                 PeekDisabled = false;
-                BigPeek = RightButtonDown | MiddleButtonDown;
                 MovePeek(x, y);
             }
 
@@ -75,9 +73,13 @@ public class Field : GameControl
     {
         if (LeftButtonDown || MiddleButtonDown)
         {
-            if (e.Button is MouseButtons.Left && PeekedTile is not null && !BigPeek)
+            if (RightButtonDown || MiddleButtonDown)
             {
-                PeekedTile.Clear();
+                PeekedTile?.Chord();
+            }
+            else if (e.Button is MouseButtons.Left)
+            {
+                PeekedTile?.Clear();
             }
 
             PeekDisabled = true;
@@ -89,7 +91,6 @@ public class Field : GameControl
         RightButtonDown &= e.Button is not MouseButtons.Right;
         MiddleButtonDown &= e.Button is not MouseButtons.Middle;
 
-        BigPeek = RightButtonDown | MiddleButtonDown;
         base.OnMouseUp(e);
     }
 
@@ -130,7 +131,7 @@ public class Field : GameControl
         PeekedTile = Game.GetTile(x, y);
         PeekedTile.IsPeeked = true;
 
-        if (BigPeek)
+        if (RightButtonDown || MiddleButtonDown)
         {
             foreach (var tile in Game.GetAdjacentTiles(PeekedTile.X, PeekedTile.Y))
             {
@@ -145,7 +146,7 @@ public class Field : GameControl
         {
             PeekedTile.IsPeeked = false;
 
-            if (BigPeek)
+            if (RightButtonDown || MiddleButtonDown)
             {
                 foreach (var tile in Game.GetAdjacentTiles(PeekedTile.X, PeekedTile.Y))
                 {
