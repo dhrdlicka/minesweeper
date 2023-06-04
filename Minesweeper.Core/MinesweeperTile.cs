@@ -21,18 +21,6 @@ public class MinesweeperTile
     public bool IsCleared => TileState is TileState.Cleared;
     public bool IsExploded => TileState is TileState.Cleared && IsMine;
 
-    public bool IsPeeked
-    {
-        get => TileState is TileState.Peeked;
-        set
-        {
-            if (!IsCleared && !IsFlagged)
-            {
-                TileState = value ? TileState.Peeked : TileState.Covered;
-            }
-        }
-    }
-
     internal void PlaceMine()
     {
         IsMine = true;

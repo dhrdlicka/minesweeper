@@ -11,6 +11,8 @@ public class Field : GameControl
     private bool RightButtonDown { get; set; } = false;
     private bool MiddleButtonDown { get; set; } = false;
 
+    private Tile? PeekedTile { get; set; } = null;
+    private bool BigPeek { get; set; } = false;
     private bool PeekDisabled { get; set; } = false;
 
     public Field(Minesweeper<Tile> game)
@@ -40,8 +42,8 @@ public class Field : GameControl
             else
             {
                 PeekDisabled = false;
-                Game.BigPeek = RightButtonDown | MiddleButtonDown;
-                Game.MovePeek(x, y);
+                BigPeek = RightButtonDown | MiddleButtonDown;
+                MovePeek(x, y);
             }
 
             Invalidate();
@@ -52,16 +54,16 @@ public class Field : GameControl
 
     protected override void OnMouseMove(MouseEventArgs e)
     {
-        if ((LeftButtonDown || MiddleButtonDown) && (Game.PeekedTile is not null || !PeekDisabled))
+        if ((LeftButtonDown || MiddleButtonDown) && (PeekedTile is not null || !PeekDisabled))
         {
             if (ContentRectangle.Contains(e.Location))
             {
                 var (x, y) = PointToButton(e.X, e.Y);
-                Game.MovePeek(x, y);
+                MovePeek(x, y);
             }
             else
             {
-                Game.CancelPeek();
+                CancelPeek();
             }
             Invalidate();
         }
@@ -73,13 +75,13 @@ public class Field : GameControl
     {
         if (LeftButtonDown || MiddleButtonDown)
         {
-            if (e.Button is MouseButtons.Left && Game.PeekedTile is not null && !Game.BigPeek)
+            if (e.Button is MouseButtons.Left && PeekedTile is not null && !BigPeek)
             {
-                Game.PeekedTile.Clear();
+                PeekedTile.Clear();
             }
 
             PeekDisabled = true;
-            Game.CancelPeek();
+            CancelPeek();
             Invalidate();
         }
 
@@ -87,7 +89,7 @@ public class Field : GameControl
         RightButtonDown &= e.Button is not MouseButtons.Right;
         MiddleButtonDown &= e.Button is not MouseButtons.Middle;
 
-        Game.BigPeek = RightButtonDown | MiddleButtonDown;
+        BigPeek = RightButtonDown | MiddleButtonDown;
         base.OnMouseUp(e);
     }
 
@@ -115,6 +117,43 @@ public class Field : GameControl
             {
                 InvokePaint(Game.GetTile(x, y).GameControl, e);
             }
+        }
+    }
+
+    public void MovePeek(int x, int y)
+    {
+        if (x < 0 || y < 0 || x >= Game.FieldWidth || y >= Game.FieldWidth)
+            return;
+
+        CancelPeek();
+
+        PeekedTile = Game.GetTile(x, y);
+        PeekedTile.IsPeeked = true;
+
+        if (BigPeek)
+        {
+            foreach (var tile in Game.GetAdjacentTiles(PeekedTile.X, PeekedTile.Y))
+            {
+                tile.IsPeeked = true;
+            }
+        }
+    }
+
+    public void CancelPeek()
+    {
+        if (PeekedTile is not null)
+        {
+            PeekedTile.IsPeeked = false;
+
+            if (BigPeek)
+            {
+                foreach (var tile in Game.GetAdjacentTiles(PeekedTile.X, PeekedTile.Y))
+                {
+                    tile.IsPeeked = false;
+                }
+            }
+
+            PeekedTile = null;
         }
     }
 

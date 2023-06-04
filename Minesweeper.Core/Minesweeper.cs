@@ -15,9 +15,6 @@ public class Minesweeper<T> : IMinesweeper where T : MinesweeperTile, new()
 
     public bool GameLost { get; private set; }
 
-    public T? PeekedTile { get; private set; } = null;
-    public bool BigPeek { get; set; } = false;
-
     public Minesweeper(int width, int height, int mineCount)
     {
         FieldWidth = width;
@@ -92,43 +89,6 @@ public class Minesweeper<T> : IMinesweeper where T : MinesweeperTile, new()
             } while (tiles[x, y].IsMine);
 
             tiles[x, y].PlaceMine();
-        }
-    }
-
-    public void MovePeek(int x, int y)
-    {
-        if (x < 0 || y < 0 || x >= FieldWidth || y >= FieldWidth)
-            return;
-
-        CancelPeek();
-
-        PeekedTile = GetTile(x, y);
-        PeekedTile.IsPeeked = true;
-
-        if (BigPeek)
-        {
-            foreach (var tile in GetAdjacentTiles(PeekedTile.X, PeekedTile.Y))
-            {
-                tile.IsPeeked = true;
-            }
-        }
-    }
-
-    public void CancelPeek()
-    {
-        if (PeekedTile is not null)
-        {
-            PeekedTile.IsPeeked = false;
-
-            if (BigPeek)
-            {
-                foreach (var tile in GetAdjacentTiles(PeekedTile.X, PeekedTile.Y))
-                {
-                    tile.IsPeeked = false;
-                }
-            }
-
-            PeekedTile = null;
         }
     }
 

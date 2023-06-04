@@ -5,6 +5,20 @@ public class Tile : MinesweeperTile
     Tile.TileControl? _control;
     public GameControl GameControl => _control ??= new(this);
 
+    bool _isPeeked = false;
+    public bool IsPeeked
+    {
+        get => _isPeeked;
+        set
+        {
+            if (!IsCleared && !IsFlagged)
+            {
+                _isPeeked = value;
+            }
+        }
+    }
+
+
     class TileControl : GameControl
     {
         public Tile Tile { get; }
@@ -64,7 +78,7 @@ public class Tile : MinesweeperTile
                 var x = Width / 2 - textSize.Width / 2;
                 var y = Height / 2 - textSize.Height / 2;
 
-                e.Graphics.DrawString(Text, Font, textBrush, x, y); 
+                e.Graphics.DrawString(Text, Font, textBrush, x, y);
             }
 
             base.OnPaint(e);
